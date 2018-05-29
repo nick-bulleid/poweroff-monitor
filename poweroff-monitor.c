@@ -4,6 +4,22 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#define GPIO_PATH "/sys/class/gpio/gpio6"
+
+void set_edge() {
+    FILE *fp;
+
+    fp = fopen(GPIO_PATH "/edge", "w");
+    if (!fp)
+    {
+        perror("set_edge");
+        exit(1);
+    }
+
+    fprintf(fp, "both\n");
+    fclose(fp);
+}
+
 void poll_pin() {
     struct pollfd fdlist[1];
     int fd;
@@ -11,9 +27,7 @@ void poll_pin() {
 
     buf[2] = '\0';
 
-    // TODO - set the edge of the gpio to "both"
-
-    fd = open("/sys/class/gpio/gpio6/value", O_RDONLY);
+    fd = open(GPIO_PATH "/value", O_RDONLY);
     read(fd, buf, 2);
     fdlist[0].fd = fd;
     fdlist[0].events = POLLPRI;
@@ -39,5 +53,6 @@ void poll_pin() {
 
 int main()
 {
+    set_edge();
     poll_pin();
 }
