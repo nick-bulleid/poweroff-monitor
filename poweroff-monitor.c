@@ -2,9 +2,13 @@
 #include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
 
-#define GPIO_PATH "/sys/class/gpio/gpio6"
+#define NANOS 1000000000LL
+#define DEBOUNCE_INTERVAL 100000L
+
+#define GPIO_PATH "/sys/class/gpio/gpio4"
 
 void set_edge() {
     FILE *fp;
@@ -24,8 +28,13 @@ void poll_pin() {
     struct pollfd fdlist[1];
     int fd;
     char buf[3];
+    struct timespec ts;
+
+    unsigned char state;
+    long long now, down_time;
 
     buf[2] = '\0';
+    state = 0;
 
     fd = open(GPIO_PATH "/value", O_RDONLY);
     read(fd, buf, 2);
@@ -42,11 +51,22 @@ void poll_pin() {
         }
 
         if (fdlist[0].revents & POLLPRI) {
-            printf("event on poweroff pin\n");
             lseek(fdlist[0].fd, 0, SEEK_SET);
             read(fdlist[0].fd, buf, 2);
 
-            // TODO - debounce input and call shutdown
+            // debounce input
+            clock_gettime(CLOCK_MONOTONIC,  &ts);
+            now = ts.tv_sec * NANOS + ts.tv_nsec;
+
+            if ((state == 0) && (buf[0] == '1')) {
+                down_time = now;
+                state = 1;
+            } else if ((state == 1) && (buf[0] == '0')) {
+                if ((now - down_time) > DEBOUNCE_INTERVAL) {
+                    state = 0;
+                    printf("event on poweroff pin\n");
+                }
+            }
         }
     }
 }
