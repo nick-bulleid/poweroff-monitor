@@ -8,7 +8,7 @@
 #define NANOS 1000000000LL
 #define DEBOUNCE_INTERVAL 100000L
 
-#define GPIO_PATH "/sys/class/gpio/gpio4"
+#define GPIO_PATH "/sys/devices/platform/power_ctrl/poweroff-gpio"
 
 void set_edge() {
     FILE *fp;
