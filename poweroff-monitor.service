@@ -1,0 +1,8 @@
+[Unit]
+Description=Daemon for shutting down system from GPIO press
+
+[Service]
+ExecStart=/usr/local/sbin/poweroff-monitor
+
+[Install]
+WantedBy=multi-user.target
