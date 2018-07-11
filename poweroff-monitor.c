@@ -64,7 +64,7 @@ void poll_pin() {
             } else if ((state == 1) && (buf[0] == '0')) {
                 if ((now - down_time) > DEBOUNCE_INTERVAL) {
                     state = 0;
-                    printf("event on poweroff pin\n");
+                    system("shutdown -P now");
                 }
             }
         }
